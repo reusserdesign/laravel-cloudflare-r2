@@ -1,69 +1,77 @@
-# :package_description
+# Cloudflare R2 integration for Laravel's Storage API
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/:vendor_slug/:package_slug.svg?style=flat-square)](https://packagist.org/packages/:vendor_slug/:package_slug)
-[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/:vendor_slug/:package_slug/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/:vendor_slug/:package_slug/actions?query=workflow%3Arun-tests+branch%3Amain)
-[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/:vendor_slug/:package_slug/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/:vendor_slug/:package_slug/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
-[![Total Downloads](https://img.shields.io/packagist/dt/:vendor_slug/:package_slug.svg?style=flat-square)](https://packagist.org/packages/:vendor_slug/:package_slug)
-<!--delete-->
----
-This repo can be used to scaffold a Laravel package. Follow these steps to get started:
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/reusser/laravel-cloudflare-r2.svg?style=flat-square)](https://packagist.org/packages/reusser/laravel-cloudflare-r2)
+[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/reusser/laravel-cloudflare-r2/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/reusserdesign/laravel-cloudflare-r2/actions?query=workflow%3Arun-tests+branch%3Amain)
+[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/reusser/laravel-cloudflare-r2/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/reusserdesign/laravel-cloudflare-r2/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
+[![Total Downloads](https://img.shields.io/packagist/dt/reusser/laravel-cloudflare-r2.svg?style=flat-square)](https://packagist.org/packages/reusser/laravel-cloudflare-r2)
 
-1. Press the "Use this template" button at the top of this repo to create a new repo with the contents of this skeleton.
-2. Run "php ./configure.php" to run a script that will replace all placeholders throughout all the files.
-3. Have fun creating your package.
-4. If you need help creating a package, consider picking up our <a href="https://laravelpackage.training">Laravel Package Training</a> video course.
----
-<!--/delete-->
-This is where your description should go. Limit it to a paragraph or two. Consider adding a small example.
-
-## Support us
-
-[<img src="https://github-ads.s3.eu-central-1.amazonaws.com/:package_name.jpg?t=1" width="419px" />](https://spatie.be/github-ad-click/:package_name)
-
-We invest a lot of resources into creating [best in class open source packages](https://spatie.be/open-source). You can support us by [buying one of our paid products](https://spatie.be/open-source/support-us).
-
-We highly appreciate you sending us a postcard from your hometown, mentioning which of our package(s) you are using. You'll find our address on [our contact page](https://spatie.be/about-us). We publish all received postcards on [our virtual postcard wall](https://spatie.be/open-source/postcards).
+Cloudflare R2 integration for Laravel's Storage API
 
 ## Installation
 
 You can install the package via composer:
 
 ```bash
-composer require :vendor_slug/:package_slug
+composer require reusser/laravel-cloudflare-r2
 ```
 
-You can publish and run the migrations with:
+### Option 1: Use a new Disk
 
-```bash
-php artisan vendor:publish --tag=":package_slug-migrations"
-php artisan migrate
-```
-
-You can publish the config file with:
-
-```bash
-php artisan vendor:publish --tag=":package_slug-config"
-```
-
-This is the contents of the published config file:
+Add this to the disks section of config/filesystems.php:
 
 ```php
-return [
-];
+        'r2' => [
+            'driver' => 'r2',
+            'key' => env('R2_ACCESS_KEY_ID'),
+            'secret' => env('R2_SECRET_ACCESS_KEY'),
+            'region' => env('R2_DEFAULT_REGION', 'us-east-1'),
+            'bucket' => env('R2_BUCKET'),
+            'url' => env('R2_URL'),
+            'endpoint' => env('R2_ENDPOINT', false),
+            'use_path_style_endpoint' => env('R2_USE_PATH_STYLE_ENDPOINT', false),
+            'throw' => false,
+        ],
 ```
 
-Optionally, you can publish the views using
+And fill out these in your .env:
 
-```bash
-php artisan vendor:publish --tag=":package_slug-views"
+```dotenv
+R2_URL=https://some-worker.randomid.workers.dev
+R2_ENDPOINT=https://randomid.r2.cloudflarestorage.com
+R2_ACCESS_KEY_ID=random-key
+R2_SECRET_ACCESS_KEY=random-secret
+R2_BUCKET=bucket
+R2_DEFAULT_REGION=us-east-1
+R2_USE_PATH_STYLE_ENDPOINT=false
 ```
 
-## Usage
+### Option 2: Use S3 Disk
+
+Change your s3 disk to the R2 driver in config/filesystems.php:
 
 ```php
-$variable = new VendorName\Skeleton();
-echo $variable->echoPhrase('Hello, VendorName!');
+        's3' => [
+            'driver' => 'r2',
+            ...
 ```
+
+And fill out these in your .env:
+
+```dotenv
+AWS_URL=https://some-worker.randomid.workers.dev
+AWS_ENDPOINT=https://random-id.r2.cloudflarestorage.com
+AWS_ACCESS_KEY_ID=random-key
+AWS_SECRET_ACCESS_KEY=random-secret
+AWS_BUCKET=some-bucket
+AWS_DEFAULT_REGION=us-east-1
+AWS_USE_PATH_STYLE_ENDPOINT=false
+```
+
+## FAQ
+
+### Is this package really necessary?
+
+No, you can use the `s3` driver with Cloudflare R2, but this package makes it easier to use. Just be sure to set `'retain_visibility' => false,` in your standard `s3` configuration to prevent incompatibility issues.
 
 ## Testing
 
@@ -85,8 +93,9 @@ Please review [our security policy](../../security/policy) on how to report secu
 
 ## Credits
 
-- [:author_name](https://github.com/:author_username)
-- [All Contributors](../../contributors)
+-   [Austin Drummond](https://github.com/adrum)
+-   [Jake Ryan Smith](https://github.com/jakeryansmith)
+-   [All Contributors](../../contributors)
 
 ## License
 
